@@ -274,6 +274,7 @@ export async function runEval({
   registers,
   isRedteam,
   abortSignal,
+  evalId = 'default-eval-id',
 }: RunEvalOptions): Promise<EvaluateResult[]> {
   // Use the original prompt to set the label, not renderedPrompt
   const promptLabel = prompt.label;
@@ -355,7 +356,8 @@ export async function runEval({
         filters,
         originalProvider: provider,
         test,
-
+        evalId,
+        
         // All of these are removed in python and script providers, but every Javascript provider gets them
         logger: logger as unknown as winston.Logger,
         getCache,
@@ -1073,6 +1075,7 @@ class Evaluator {
                 isRedteam: testSuite.redteam != null,
                 concurrency,
                 abortSignal: options.abortSignal,
+                evalId: this.evalRecord.id,
               });
               promptIdx++;
             }

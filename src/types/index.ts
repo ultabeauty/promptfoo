@@ -162,6 +162,7 @@ export interface RunEvalOptions {
    * This is passed to the provider's callApi function
    */
   abortSignal?: AbortSignal;
+  evalId?: string;
 }
 
 const EvaluateOptionsSchema = z.object({
