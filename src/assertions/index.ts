@@ -322,6 +322,7 @@ export async function runAssertion({
         }
       } else {
         renderedValue = processFileReference(renderedValue);
+        renderedValue = nunjucks.renderString(renderedValue.toString(), test.vars || {});
       }
     } else if (isPackagePath(renderedValue)) {
       const basePath = cliState.basePath || '';
