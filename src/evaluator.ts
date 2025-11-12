@@ -1942,7 +1942,8 @@ class Evaluator {
       );
 
     // Log final token and price summary
-    logger.info(`Evaluation complete: ${this.stats.tokenUsage.total} total tokens used, $${this.stats.price.total.toFixed(6)} total cost (input: $${this.stats.price.input.toFixed(6)}, cached: $${this.stats.price.cached.toFixed(6)}, output: $${this.stats.price.completion.toFixed(6)})`);
+   logger.info(`Evaluation complete: Number of Tokens: prompt: ${this.stats.tokenUsage.assertions.prompt}, cached: ${this.stats.tokenUsage.assertions.cached}, completion: ${this.stats.tokenUsage.assertions.completion}`);
+    logger.info(`Total cost (input: $${this.stats.price.input.toFixed(6)}, cached: $${this.stats.price.cached.toFixed(6)}, output: $${this.stats.price.completion.toFixed(6)}), total: $${this.stats.price.total.toFixed(6)}`);
 
     const numResults = this.evalRecord.results.length;
     if (numResults > 0) {
