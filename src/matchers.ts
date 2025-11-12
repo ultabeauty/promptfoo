@@ -576,9 +576,9 @@ export async function matchesLlmRubric(
     const cachedCost = (cachedTokens * 0.50) / 1_000_000;
     const completionCost = (completionTokens * 8.00) / 1_000_000;
     const totalCost = inputCost + cachedCost + completionCost;
-    logger.info(
-      `Token usage for assertion ${assertion?.type} grading provider ${gradingProviderId}: prompt=${usage?.prompt || 0}, completion=${usage?.completion || 0}, cached=${usage?.cached || 0}, reasoning=${usage?.completionDetails?.reasoning || 0}, total=${usage?.total || 0}, cost=$${totalCost.toFixed(6)}`,
-    );
+    // logger.info(
+    //   `Token usage for assertion ${assertion?.type} grading provider ${gradingProviderId}: prompt=${usage?.prompt || 0}, completion=${usage?.completion || 0}, cached=${usage?.cached || 0}, reasoning=${usage?.completionDetails?.reasoning || 0}, total=${usage?.total || 0}, cost=$${totalCost.toFixed(6)}`,
+    // );
   }
 
   let jsonObjects: any[] = [];
