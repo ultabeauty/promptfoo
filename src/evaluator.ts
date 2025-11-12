@@ -555,11 +555,39 @@ export async function runEval({
       }
       ret.response = processedResponse;
       ret.gradingResult = checkResult;
+
+      // Calculate price breakdown for grading result if tokens were used
+      if (checkResult.tokensUsed) {
+        const inputTokens = (checkResult.tokensUsed.prompt || 0) - (checkResult.tokensUsed.cached || 0);
+        const cachedTokens = checkResult.tokensUsed.cached || 0;
+        const completionTokens = checkResult.tokensUsed.completion || 0;
+
+        const inputCost = (inputTokens * 2.00) / 1_000_000;
+        const cachedCost = (cachedTokens * 0.50) / 1_000_000;
+        const completionCost = (completionTokens * 8.00) / 1_000_000;
+        const totalCost = inputCost + cachedCost + completionCost;
+
+        checkResult.price = {
+          input: inputCost,
+          cached: cachedCost,
+          completion: completionCost,
+          total: totalCost,
+        };
+      }
     }
 
     // Update token usage stats
     if (response.tokenUsage) {
       accumulateResponseTokenUsage(ret.tokenUsage, response);
+
+      // Log detailed token usage for OpenAI providers
+      const providerId = provider.id();
+      if (providerId.startsWith('openai:') || providerId.includes('openai')) {
+        const usage = response.tokenUsage;
+        logger.info(
+          `Token usage for ${providerId}: prompt=${usage.prompt || 0}, completion=${usage.completion || 0}, cached=${usage.cached || 0}, reasoning=${usage?.completionDetails?.reasoning || 0}, total=${usage.total || 0}`,
+        );
+      }
     }
 
     if (test.options?.storeOutputAs && ret.response?.output && registers) {
@@ -690,6 +718,7 @@ class Evaluator {
       failures: 0,
       errors: 0,
       tokenUsage: createEmptyTokenUsage(),
+      price: { input: 0, cached: 0, completion: 0, total: 0 },
     };
     this.conversations = {};
     this.registers = {};
@@ -1274,7 +1303,56 @@ class Evaluator {
           updateAssertionMetrics(metrics, row.gradingResult.tokensUsed);
         }
 
-        metrics.cost += row.cost || 0;
+        // // Calculate price breakdown for grading result if tokens were used
+        // if (row.gradingResult?.price) {
+        //   // Initialize price object if it doesn't exist
+        //   if (!metrics.price) {
+        //     metrics.price = { input: 0, cached: 0, completion: 0, total: 0 };
+        //   }
+
+        //   // Add to price breakdown
+        //   metrics.price.input += row.gradingResult.price.input;
+        //   metrics.price.cached += row.gradingResult.price.cached;
+        //   metrics.price.completion += row.gradingResult.price.completion;
+        //   metrics.price.total += row.gradingResult.price.total;
+
+        //   // Aggregate to eval-level stats
+        //   this.stats.price.input += row.gradingResult.price.input;
+        //   this.stats.price.cached += row.gradingResult.price.cached;
+        //   this.stats.price.completion += row.gradingResult.price.completion;
+        //   this.stats.price.total += row.gradingResult.price.total;
+        // }
+
+        // Calculate price breakdown for GPT-4.1 pricing (input $2/1M, cached $0.5/1M, completion $8/1M)
+        if (row.tokenUsage?.assertions) {
+          const inputTokens = (row.tokenUsage.assertions.prompt || 0) - (row.tokenUsage.assertions.cached || 0);
+          const cachedTokens = row.tokenUsage.assertions.cached || 0;
+          const completionTokens = row.tokenUsage.assertions.completion || 0;
+
+          const inputCost = (inputTokens * 2.00) / 1_000_000;
+          const cachedCost = (cachedTokens * 0.50) / 1_000_000;
+          const completionCost = (completionTokens * 8.00) / 1_000_000;
+          const totalCost = inputCost + cachedCost + completionCost;
+
+          // Initialize price object if it doesn't exist
+          if (!metrics.price) {
+            metrics.price = { input: 0, cached: 0, completion: 0, total: 0 };
+          }
+
+          // Add to price breakdown
+          metrics.price.input += inputCost;
+          metrics.price.cached += cachedCost;
+          metrics.price.completion += completionCost;
+          metrics.price.total += totalCost;
+          
+          // Aggregate to eval-level stats
+          this.stats.price.input += inputCost;
+          this.stats.price.cached += cachedCost;
+          this.stats.price.completion += completionCost;
+          this.stats.price.total += totalCost;
+          }
+  
+          metrics.cost += row.cost || 0;
 
         await runExtensionHook(testSuite.extensions, 'afterEach', {
           test: evalStep.test,
@@ -1863,6 +1941,16 @@ class Evaluator {
         (r) => r.failureReason === ResultFailureReason.ERROR && r.error?.includes('timed out'),
       );
 
+    // Log final token and price summary
+    logger.info(`Evaluation complete: ${this.stats.tokenUsage.total} total tokens used, $${this.stats.price.total.toFixed(6)} total cost (input: $${this.stats.price.input.toFixed(6)}, cached: $${this.stats.price.cached.toFixed(6)}, output: $${this.stats.price.completion.toFixed(6)})`);
+
+    const numResults = this.evalRecord.results.length;
+    if (numResults > 0) {
+      const avgTokensPerResult = this.stats.tokenUsage.total / numResults;
+      const avgCostPerResult = this.stats.price.total / numResults;
+      logger.info(`Average per result: ${avgTokensPerResult.toFixed(2)} tokens, $${avgCostPerResult.toFixed(8)} cost`);
+    }
+
     telemetry.record('eval_ran', {
       // Basic metrics
       numPrompts: prompts.length,
@@ -1896,6 +1984,12 @@ class Evaluator {
       cachedTokens,
       totalCost,
       totalRequests,
+
+      // New price breakdown metrics
+      totalInputCost: this.stats.price.input,
+      totalCachedCost: this.stats.price.cached,
+      totalCompletionCost: this.stats.price.completion,
+      totalPrice: this.stats.price.total,
 
       // Assertion metrics
       numAssertions: totalAssertions,

@@ -87,7 +87,7 @@ describe('table', () => {
       generateTable(mockEvaluateTable);
 
       expect(Table).toHaveBeenCalledWith({
-        head: ['var1', 'var2', '[test-provider] test-label'],
+        head: ['var1', 'var2', '[test-provider] test-label', 'Tokens', 'Price'],
         colWidths: expect.any(Array),
         wordWrap: true,
         wrapOnWordBoundary: true,
@@ -105,12 +105,16 @@ describe('table', () => {
         'value1',
         'value2',
         chalk.green('[PASS] ') + 'passing test',
+        '{\n  "prompt": 0,\n  "completion": 0,\n  "cached": 0,\n  "reasoning": 0\n}',
+        '{\n  "prompt": "$0.0000",\n  "completion": "$0.0000",\n  "cached": "$0.0000",\n  "reasoning": "$0.0000",\n  "total": "$0.0000"\n}',
       ]);
 
       expect(table.push).toHaveBeenCalledWith([
         'value3',
         'value4',
         chalk.red('[FAIL] ') + chalk.red.bold('failing test'),
+        '{\n  "prompt": 0,\n  "completion": 0,\n  "cached": 0,\n  "reasoning": 0\n}',
+        '{\n  "prompt": "$0.0000",\n  "completion": "$0.0000",\n  "cached": "$0.0000",\n  "reasoning": "$0.0000",\n  "total": "$0.0000"\n}',
       ]);
     });
 
@@ -161,7 +165,7 @@ describe('table', () => {
 
       expect(Table).toHaveBeenCalledWith(
         expect.objectContaining({
-          head: [expect.stringMatching(/^a{7}\.{3}$/)],
+          head: [expect.stringMatching(/^a{7}\.{3}$/), 'Tokens', 'Price'],
         }),
       );
     });

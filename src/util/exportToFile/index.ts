@@ -1,6 +1,45 @@
 import type EvalResult from '../../models/evalResult';
 import type { EvaluateTableOutput, EvaluateTableRow } from '../../types/index';
 
+function calculatePriceBreakdown(result: EvalResult): { input: number; cached: number; completion: number; reasoning?: number; total: number; } | undefined {
+  if (result.response?.tokenUsage?.assertions || result.gradingResult?.tokensUsed) {
+    const tokenUsage = result.response?.tokenUsage?.assertions || result.gradingResult?.tokensUsed;
+    if (tokenUsage) {
+      const promptTokens = tokenUsage.prompt || 0;
+      const completionTokens = tokenUsage.completion || 0;
+      const cachedTokens = tokenUsage.cached || 0;
+      const reasoningTokens = tokenUsage.completionDetails?.reasoning || 0;
+      const totalTokens = promptTokens + completionTokens + cachedTokens + reasoningTokens;
+
+      if (totalTokens > 0) {
+        const costPerToken = (result.cost || 0) / totalTokens;
+        return {
+          input: promptTokens * costPerToken,
+          cached: cachedTokens * costPerToken,
+          completion: completionTokens * costPerToken,
+          reasoning: reasoningTokens * costPerToken,
+          total: result.cost || 0,
+        };
+      } else {
+        return {
+          input: 0,
+          cached: 0,
+          completion: 0,
+          reasoning: 0,
+          total: result.cost || 0,
+        };
+      }
+    }
+  }
+  return {
+    input: 0,
+    cached: 0,
+    completion: 0,
+    reasoning: 0,
+    total: result.cost || 0,
+  };
+}
+
 export function convertEvalResultToTableCell(result: EvalResult): EvaluateTableOutput {
   let resultText: string | undefined;
   const outputTextDisplay = (
@@ -28,6 +67,7 @@ export function convertEvalResultToTableCell(result: EvalResult): EvaluateTableO
     provider: result.provider?.label || result.provider?.id || 'unknown provider',
     pass: result.success,
     cost: result.cost || 0,
+    price: calculatePriceBreakdown(result),
     audio: result.response?.audio
       ? {
           id: result.response.audio.id,

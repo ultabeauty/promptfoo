@@ -565,6 +565,22 @@ export async function matchesLlmRubric(
     return fail(resp.error || 'No output', resp.tokenUsage);
   }
 
+  // Log detailed token usage for grading providers (evaluation, not generation)
+  const gradingProviderId = finalProvider.id();
+  if (gradingProviderId.startsWith('openai:') || gradingProviderId.includes('openai')) {
+    const usage = resp.tokenUsage;
+    const inputTokens = (usage?.prompt || 0) - (usage?.cached || 0);
+    const cachedTokens = usage?.cached || 0;
+    const completionTokens = usage?.completion || 0;
+    const inputCost = (inputTokens * 2.00) / 1_000_000;
+    const cachedCost = (cachedTokens * 0.50) / 1_000_000;
+    const completionCost = (completionTokens * 8.00) / 1_000_000;
+    const totalCost = inputCost + cachedCost + completionCost;
+    logger.info(
+      `Token usage for assertion ${assertion?.type} grading provider ${gradingProviderId}: prompt=${usage?.prompt || 0}, completion=${usage?.completion || 0}, cached=${usage?.cached || 0}, reasoning=${usage?.completionDetails?.reasoning || 0}, total=${usage?.total || 0}, cost=$${totalCost.toFixed(6)}`,
+    );
+  }
+
   let jsonObjects: any[] = [];
   if (typeof resp.output === 'string') {
     try {

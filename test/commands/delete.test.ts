@@ -97,6 +97,7 @@ describe('delete command', () => {
               },
               assertions: {} as any,
             },
+            price: { input: 0, cached: 0, completion: 0, total: 0 },
           },
         },
         prompts: [],
@@ -118,6 +119,7 @@ describe('delete command', () => {
             },
             assertions: {} as any,
           },
+          price: { input: 0, cached: 0, completion: 0, total: 0 },
         },
       } as EvalWithMetadata;
 
@@ -176,6 +178,7 @@ describe('delete command', () => {
               },
               assertions: {} as any,
             },
+            price: { input: 0, cached: 0, completion: 0, total: 0 },
           },
           duration: 0,
           summary: '',

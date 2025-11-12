@@ -11,6 +11,7 @@ export const REQUEST_TIMEOUT_MS = getEnvInt('REQUEST_TIMEOUT_MS', 300_000);
 interface ModelCost {
   input: number;
   output: number;
+  cachedInput?: number;
   audioInput?: number;
   audioOutput?: number;
 }
@@ -22,6 +23,7 @@ interface ProviderModel {
 
 export interface ProviderConfig {
   cost?: number;
+  cachedCost?: number;
   audioCost?: number;
 }
 
@@ -33,6 +35,7 @@ export interface ProviderConfig {
  * @param {number | undefined} promptTokens The number of tokens in the prompt.
  * @param {number | undefined} completionTokens The number of tokens in the completion.
  * @param {ProviderModel[]} models An array of available models with their costs.
+ * @param {number | undefined} cachedTokens The number of cached tokens in the prompt.
  * @returns {number | undefined} The calculated cost, or undefined if it can't be calculated.
  */
 export function calculateCost(
@@ -41,6 +44,7 @@ export function calculateCost(
   promptTokens: number | undefined,
   completionTokens: number | undefined,
   models: ProviderModel[],
+  cachedTokens?: number | undefined,
 ): number | undefined {
   if (
     !Number.isFinite(promptTokens) ||
@@ -58,7 +62,17 @@ export function calculateCost(
 
   const inputCost = config.cost ?? model.cost.input;
   const outputCost = config.cost ?? model.cost.output;
-  return inputCost * promptTokens + outputCost * completionTokens || undefined;
+  let totalCost = outputCost * completionTokens;
+
+  if (cachedTokens && model.cost.cachedInput !== undefined && cachedTokens <= promptTokens) {
+    const cachedCost = config.cachedCost ?? model.cost.cachedInput;
+    const nonCachedPromptTokens = promptTokens - cachedTokens;
+    totalCost += nonCachedPromptTokens * inputCost + cachedTokens * cachedCost;
+  } else {
+    totalCost += inputCost * promptTokens;
+  }
+
+  return totalCost || undefined;
 }
 
 /**

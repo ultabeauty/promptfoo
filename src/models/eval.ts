@@ -868,6 +868,7 @@ export default class Eval {
       failures: 0,
       errors: 0,
       tokenUsage: createEmptyTokenUsage(),
+      price: { input: 0, cached: 0, completion: 0, total: 0 },
     };
 
     for (const prompt of this.prompts) {

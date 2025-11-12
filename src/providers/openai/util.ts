@@ -71,6 +71,7 @@ export const OPENAI_CHAT_MODELS = [
     id: model,
     cost: {
       input: 2 / 1e6,
+      cachedInput: 0.5 / 1e6,
       output: 8 / 1e6,
     },
   })),
@@ -78,6 +79,7 @@ export const OPENAI_CHAT_MODELS = [
     id: model,
     cost: {
       input: 0.4 / 1e6,
+      cachedInput: 0.1 / 1e6,  // Assuming similar ratio
       output: 1.6 / 1e6,
     },
   })),
@@ -85,6 +87,7 @@ export const OPENAI_CHAT_MODELS = [
     id: model,
     cost: {
       input: 0.1 / 1e6,
+      cachedInput: 0.025 / 1e6,  // Assuming similar ratio
       output: 0.4 / 1e6,
     },
   })),
@@ -463,6 +466,7 @@ export function calculateOpenAICost(
   config: ProviderConfig,
   promptTokens?: number,
   completionTokens?: number,
+  cachedTokens?: number,
   audioPromptTokens?: number,
   audioCompletionTokens?: number,
 ): number | undefined {
@@ -472,7 +476,7 @@ export function calculateOpenAICost(
       ...OPENAI_COMPLETION_MODELS,
       ...OPENAI_REALTIME_MODELS,
       ...OPENAI_DEEP_RESEARCH_MODELS,
-    ]);
+    ], cachedTokens);
   }
 
   // Calculate with audio tokens
@@ -533,10 +537,11 @@ export function getTokenUsage(data: any, cached: boolean): Partial<TokenUsage> {
     if (cached) {
       return { cached: data.usage.total_tokens, total: data.usage.total_tokens };
     } else {
-      return {
+      const usageStats = {
         total: data.usage.total_tokens,
         prompt: data.usage.prompt_tokens || 0,
         completion: data.usage.completion_tokens || 0,
+        cached: data.usage.prompt_tokens_details?.cached_tokens || 0,
         ...(data.usage.completion_tokens_details
           ? {
               completionDetails: {
@@ -547,6 +552,7 @@ export function getTokenUsage(data: any, cached: boolean): Partial<TokenUsage> {
             }
           : {}),
       };
+      return usageStats;
     }
   }
   return {};

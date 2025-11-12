@@ -137,6 +137,7 @@ describe('filterTestsUtil', () => {
               failures: 0,
               errors: 0,
               tokenUsage: mockTokenUsage,
+              price: { input: 0, cached: 0, completion: 0, total: 0 },
             },
           },
           config: {},
@@ -182,6 +183,7 @@ describe('filterTestsUtil', () => {
               failures: 0,
               errors: 0,
               tokenUsage: mockTokenUsage,
+              price: { input: 0, cached: 0, completion: 0, total: 0 },
             },
           }),
         };
@@ -210,6 +212,7 @@ describe('filterTestsUtil', () => {
               failures: 0,
               errors: 0,
               tokenUsage: mockTokenUsage,
+              price: { input: 0, cached: 0, completion: 0, total: 0 },
             },
           },
           config: {},
@@ -303,6 +306,7 @@ describe('filterTestsUtil', () => {
               failures: 0,
               errors: 0,
               tokenUsage: mockTokenUsage,
+              price: { input: 0, cached: 0, completion: 0, total: 0 },
             },
           },
           config: {},
@@ -340,6 +344,7 @@ describe('filterTestsUtil', () => {
               failures: 0,
               errors: 0,
               tokenUsage: mockTokenUsage,
+              price: { input: 0, cached: 0, completion: 0, total: 0 },
             },
           }),
         };
@@ -391,6 +396,7 @@ describe('filterTestsUtil', () => {
               failures: 0,
               errors: 0,
               tokenUsage: mockTokenUsage,
+              price: { input: 0, cached: 0, completion: 0, total: 0 },
             },
           }),
         };

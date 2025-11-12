@@ -73,6 +73,7 @@ describe('Provider Test Functions', () => {
             numRequests: 0,
           },
         },
+        price: { input: 0, cached: 0, completion: 0, total: 0 },
       },
       prompts: [],
       timestamp: new Date().toISOString(),

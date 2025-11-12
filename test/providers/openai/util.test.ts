@@ -59,6 +59,7 @@ describe('getTokenUsage', () => {
       total: 100,
       prompt: 40,
       completion: 60,
+      cached: 0,
     });
   });
 
@@ -101,6 +102,7 @@ describe('getTokenUsage', () => {
       total: 100,
       prompt: 40,
       completion: 60,
+      cached: 0,
       completionDetails: {
         reasoning: 20,
         acceptedPrediction: 30,
@@ -112,112 +114,112 @@ describe('getTokenUsage', () => {
 
 describe('calculateOpenAICost', () => {
   it('should calculate cost correctly for transcription model gpt-4o-transcribe', () => {
-    const cost = calculateOpenAICost('gpt-4o-transcribe', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-transcribe', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 2.5 + 500 * 10) / 1e6, 6);
   });
 
   it('should calculate cost correctly for transcription model gpt-4o-mini-transcribe', () => {
-    const cost = calculateOpenAICost('gpt-4o-mini-transcribe', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-mini-transcribe', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 1.25 + 500 * 5) / 1e6, 6);
   });
 
   it('should calculate cost correctly for TTS model gpt-4o-mini-tts', () => {
-    const cost = calculateOpenAICost('gpt-4o-mini-tts', {}, 1000, 0, 0, 500);
+    const cost = calculateOpenAICost('gpt-4o-mini-tts', {}, 1000, 0, 0, 0, 500);
     expect(cost).toBeCloseTo((1000 * 0.6 + 500 * 12) / 1e6, 6);
   });
 
   it('should calculate cost correctly for search preview model gpt-4o-search-preview', () => {
-    const cost = calculateOpenAICost('gpt-4o-search-preview', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-search-preview', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 2.5 + 500 * 10) / 1e6, 6);
   });
 
   it('should calculate cost correctly for search preview model gpt-4o-search-preview-2025-03-11', () => {
-    const cost = calculateOpenAICost('gpt-4o-search-preview-2025-03-11', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-search-preview-2025-03-11', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 2.5 + 500 * 10) / 1e6, 6);
   });
 
   it('should calculate cost correctly for mini search preview model gpt-4o-mini-search-preview', () => {
-    const cost = calculateOpenAICost('gpt-4o-mini-search-preview', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-mini-search-preview', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 0.15 + 500 * 0.6) / 1e6, 6);
   });
 
   it('should calculate cost correctly for computer use model computer-use-preview', () => {
-    const cost = calculateOpenAICost('computer-use-preview', {}, 1000, 500);
+    const cost = calculateOpenAICost('computer-use-preview', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 3 + 500 * 12) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-4-1106-vision-preview', () => {
-    const cost = calculateOpenAICost('gpt-4-1106-vision-preview', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4-1106-vision-preview', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 10 + 500 * 30) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-4o-realtime-preview-2024-10-01', () => {
-    const cost = calculateOpenAICost('gpt-4o-realtime-preview-2024-10-01', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-realtime-preview-2024-10-01', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 5 + 500 * 20) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-4o-realtime-preview-2024-12-17', () => {
-    const cost = calculateOpenAICost('gpt-4o-realtime-preview-2024-12-17', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-realtime-preview-2024-12-17', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 5 + 500 * 20) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-4o-mini-realtime-preview-2024-12-17', () => {
-    const cost = calculateOpenAICost('gpt-4o-mini-realtime-preview-2024-12-17', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4o-mini-realtime-preview-2024-12-17', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 0.6 + 500 * 2.4) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-realtime', () => {
-    const cost = calculateOpenAICost('gpt-realtime', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-realtime', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 32 + 500 * 64) / 1e6, 6);
   });
 
   it('should calculate cost correctly with audio tokens', () => {
-    const cost = calculateOpenAICost('gpt-4o-audio-preview', {}, 1000, 500, 200, 100);
+    const cost = calculateOpenAICost('gpt-4o-audio-preview', {}, 1000, 500, 0, 200, 100);
     expect(cost).toBeCloseTo((1000 * 2.5 + 500 * 10 + 200 * 40 + 100 * 80) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-4', () => {
-    const cost = calculateOpenAICost('gpt-4', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 30 + 500 * 60) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-4.1', () => {
-    const cost = calculateOpenAICost('gpt-4.1', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4.1', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 2 + 500 * 8) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-3.5-turbo', () => {
-    const cost = calculateOpenAICost('gpt-3.5-turbo', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-3.5-turbo', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 0.5 + 500 * 1.5) / 1e6, 6);
   });
 
   it('should calculate cost correctly for o4-mini', () => {
-    const cost = calculateOpenAICost('o4-mini', {}, 1000, 500);
+    const cost = calculateOpenAICost('o4-mini', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 1.1 + 500 * 4.4) / 1e6, 6);
   });
 
   it('should calculate cost correctly for codex-mini-latest', () => {
-    const cost = calculateOpenAICost('codex-mini-latest', {}, 1000, 500);
+    const cost = calculateOpenAICost('codex-mini-latest', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 1.5 + 500 * 6.0) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-5', () => {
-    const cost = calculateOpenAICost('gpt-5', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-5', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 1.25 + 500 * 10) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-5-chat-latest', () => {
-    const cost = calculateOpenAICost('gpt-5-chat-latest', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-5-chat-latest', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 1.25 + 500 * 10) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-5-nano', () => {
-    const cost = calculateOpenAICost('gpt-5-nano', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-5-nano', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 0.05 + 500 * 0.4) / 1e6, 6);
   });
 
   it('should calculate cost correctly for gpt-5-mini', () => {
-    const cost = calculateOpenAICost('gpt-5-mini', {}, 1000, 500);
+    const cost = calculateOpenAICost('gpt-5-mini', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 0.25 + 500 * 2) / 1e6, 6);
   });
 
@@ -232,7 +234,7 @@ describe('calculateOpenAICost', () => {
   });
 
   it('should use custom cost from config when provided', () => {
-    const cost = calculateOpenAICost('gpt-4', { cost: 0.123 }, 1000, 500);
+    const cost = calculateOpenAICost('gpt-4', { cost: 0.123 }, 1000, 500, 0);
     expect(cost).toBe(184.5);
   });
 
@@ -242,49 +244,50 @@ describe('calculateOpenAICost', () => {
       { audioCost: 0.05 },
       1000,
       500,
+      0,
       200,
       100,
     );
-    expect(cost).toBe(15.0075);
+    expect(cost).toBeCloseTo(0.007515, 6);
   });
 
   it('should handle a model with no cost property', () => {
-    const cost = calculateOpenAICost('text-davinci-002', {}, 1000, 500);
+    const cost = calculateOpenAICost('text-davinci-002', {}, 1000, 500, 0);
     expect(cost).toBeUndefined();
   });
 
   it('should calculate cost correctly for o1-pro', () => {
-    const cost = calculateOpenAICost('o1-pro', {}, 1000, 500);
+    const cost = calculateOpenAICost('o1-pro', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 150 + 500 * 600) / 1e6, 6);
   });
 
   it('should calculate cost correctly for o3-pro', () => {
-    const cost = calculateOpenAICost('o3-pro', {}, 1000, 500);
+    const cost = calculateOpenAICost('o3-pro', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 20 + 500 * 80) / 1e6, 6);
   });
 
   it('should calculate cost correctly for o1-pro-2025-03-19', () => {
-    const cost = calculateOpenAICost('o1-pro-2025-03-19', {}, 1000, 500);
+    const cost = calculateOpenAICost('o1-pro-2025-03-19', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 150 + 500 * 600) / 1e6, 6);
   });
 
   it('should calculate cost correctly for o3', () => {
-    const cost = calculateOpenAICost('o3', {}, 1000, 500);
+    const cost = calculateOpenAICost('o3', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 2 + 500 * 8) / 1e6, 6);
   });
 
   it('should calculate cost correctly for o3-2025-04-16', () => {
-    const cost = calculateOpenAICost('o3-2025-04-16', {}, 1000, 500);
+    const cost = calculateOpenAICost('o3-2025-04-16', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo((1000 * 2 + 500 * 8) / 1e6, 6);
   });
 
   it('should calculate cost correctly for o3-pro-2025-06-10', () => {
-    const cost = calculateOpenAICost('o3-pro-2025-06-10', {}, 1000, 500);
+    const cost = calculateOpenAICost('o3-pro-2025-06-10', {}, 1000, 500, 0);
     expect(cost).toBeCloseTo(0.06); // 20/1M * 1000 + 80/1M * 500
   });
 
   it('should calculate audio token costs for gpt-4o-realtime-preview-2024-12-17', () => {
-    const cost = calculateOpenAICost('gpt-4o-realtime-preview-2024-12-17', {}, 1000, 500, 200, 100);
+    const cost = calculateOpenAICost('gpt-4o-realtime-preview-2024-12-17', {}, 1000, 500, 0, 200, 100);
     const expectedCost = (1000 * 5 + 500 * 20 + 200 * 40 + 100 * 80) / 1e6;
     expect(cost).toBeCloseTo(expectedCost, 6);
   });
@@ -295,6 +298,7 @@ describe('calculateOpenAICost', () => {
       {},
       1000,
       500,
+      0,
       200,
       100,
     );
@@ -303,33 +307,33 @@ describe('calculateOpenAICost', () => {
   });
 
   it('should calculate audio token costs for gpt-realtime', () => {
-    const cost = calculateOpenAICost('gpt-realtime', {}, 1000, 500, 200, 100);
+    const cost = calculateOpenAICost('gpt-realtime', {}, 1000, 500, 0, 200, 100);
     const expectedCost = (1000 * 32 + 500 * 64 + 200 * 32 + 100 * 64) / 1e6;
     expect(cost).toBeCloseTo(expectedCost, 6);
   });
 
   it('should return undefined for zero tokens', () => {
-    const cost = calculateOpenAICost('gpt-4.1', {}, 0, 0);
+    const cost = calculateOpenAICost('gpt-4.1', {}, 0, 0, 0);
     expect(cost).toBeUndefined();
   });
 
   it('should handle only prompt tokens', () => {
-    const cost = calculateOpenAICost('gpt-4.1', {}, 1000, 0);
+    const cost = calculateOpenAICost('gpt-4.1', {}, 1000, 0, 0);
     expect(cost).toBeCloseTo((1000 * 2) / 1e6, 6);
   });
 
   it('should handle only completion tokens', () => {
-    const cost = calculateOpenAICost('gpt-4.1', {}, 0, 1000);
+    const cost = calculateOpenAICost('gpt-4.1', {}, 0, 1000, 0);
     expect(cost).toBeCloseTo((1000 * 8) / 1e6, 6);
   });
 
   it('should handle large token counts', () => {
-    const cost = calculateOpenAICost('gpt-4.1', {}, 1000000, 1000000);
+    const cost = calculateOpenAICost('gpt-4.1', {}, 1000000, 1000000, 0);
     expect(cost).toBeCloseTo((1000000 * 2 + 1000000 * 8) / 1e6, 6);
   });
 
   it('should handle mixed undefined audio tokens', () => {
-    const cost = calculateOpenAICost('gpt-4o-audio-preview', {}, 1000, 500, undefined, 100);
+    const cost = calculateOpenAICost('gpt-4o-audio-preview', {}, 1000, 500, 0, undefined, 100);
     expect(cost).toBeUndefined();
   });
 
@@ -356,8 +360,8 @@ describe('calculateOpenAICost', () => {
     const baseInputCost = model.cost.input * promiseTokens;
     const baseOutputCost = model.cost.output * completionTokens;
 
-    const audioInputCostCustom = audioCost * audioPromptTokens;
-    const audioOutputCostCustom = audioCost * audioCompletionTokens;
+    const audioInputCostCustom = audioCost * audioPromptTokens / 1e6;
+    const audioOutputCostCustom = audioCost * audioCompletionTokens / 1e6;
 
     const expectedTotalCost =
       (baseInputCost + baseOutputCost + audioInputCostCustom + audioOutputCostCustom) / 1;
@@ -367,6 +371,7 @@ describe('calculateOpenAICost', () => {
       { audioCost },
       promiseTokens,
       completionTokens,
+      0,
       audioPromptTokens,
       audioCompletionTokens,
     );

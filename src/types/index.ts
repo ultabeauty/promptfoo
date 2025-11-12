@@ -227,6 +227,12 @@ const PromptMetricsSchema = z.object({
     })
     .optional(),
   cost: z.number(),
+  price: z.object({
+    input: z.number(),
+    cached: z.number(),
+    completion: z.number(),
+    total: z.number(),
+  }).optional(),
 });
 export type PromptMetrics = z.infer<typeof PromptMetricsSchema>;
 
@@ -285,6 +291,12 @@ export interface EvaluateResult {
   gradingResult?: GradingResult | null;
   namedScores: Record<string, number>;
   cost?: number;
+  price?: {
+    input: number;
+    cached: number;
+    completion: number;
+    total: number;
+  };
   metadata?: Record<string, any>;
   tokenUsage?: Required<TokenUsage>;
 }
@@ -305,6 +317,13 @@ export interface EvaluateTableOutput {
   testCase: AtomicTestCase;
   text: string;
   tokenUsage?: Partial<TokenUsage>;
+  price?: {
+    input: number;
+    cached: number;
+    completion: number;
+    reasoning?: number;
+    total: number;
+  };
   error?: string | null;
   audio?: {
     id?: string;
@@ -336,6 +355,12 @@ export interface EvaluateStats {
   failures: number;
   errors: number;
   tokenUsage: Required<TokenUsage>;
+  price: {
+    input: number;
+    cached: number;
+    completion: number;
+    total: number;
+  };
 }
 
 export interface EvaluateSummaryV3 {
@@ -385,6 +410,14 @@ export interface GradingResult {
 
   // Record of tokens usage for this assertion
   tokensUsed?: TokenUsage;
+
+  // Price breakdown for this assertion
+  price?: {
+    input: number;
+    cached: number;
+    completion: number;
+    total: number;
+  };
 
   // List of results for each component of the assertion
   componentResults?: GradingResult[];

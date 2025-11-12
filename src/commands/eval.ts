@@ -687,9 +687,8 @@ export async function doEval(
       }
 
       // Provider breakdown
-
       const providerIds = tracker.getProviderIds();
-      if (providerIds.length > 1) {
+      if (providerIds.length > 0) {
         logger.info(`\n  ${chalk.cyan.bold('Provider Breakdown:')}`);
 
         // Sort providers by total token usage (descending)
@@ -765,6 +764,26 @@ export async function doEval(
       logger.info(
         `\n  ${chalk.blue.bold('Grand Total:')} ${chalk.white.bold(grandTotal.toLocaleString())} tokens`,
       );
+
+      // Show averages per test
+      const avgTokensPerTest = totalTests > 0 ? grandTotal / totalTests : 0;
+      const costBlock = tokenUsage.prompt || tokenUsage.completion ? (() => {
+        const inputTokens = (tokenUsage.prompt || 0) - (tokenUsage.cached || 0);
+        const cachedTokens = tokenUsage.cached || 0;
+        const completionTokens = tokenUsage.completion || 0;
+        const inputCost = (inputTokens * 2.00) / 1_000_000;
+        const cachedCost = (cachedTokens * 0.50) / 1_000_000;
+        const completionCost = (completionTokens * 8.00) / 1_000_000;
+        const totalCost = inputCost + cachedCost + completionCost;
+        return totalCost;
+      })() : 0;
+      const avgCostPerTest = totalTests > 0 ? costBlock / totalTests : 0;
+      logger.info(`\n  ${chalk.cyan.bold('Averages per test:')}`);
+      logger.info(`    ${chalk.gray('Tokens:')} ${chalk.white(avgTokensPerTest.toLocaleString())}`);
+      if (costBlock > 0) {
+        logger.info(`    ${chalk.gray('Cost:')} ${chalk.white(avgCostPerTest.toFixed(6))} USD`);
+      }
+
       printBorder();
     }
 
@@ -776,6 +795,64 @@ export async function doEval(
     }
     if (!Number.isNaN(passRate)) {
       logger.info(chalk.blue.bold(`Pass Rate: ${passRate.toFixed(2)}%`));
+    }
+
+    // Log detailed token usage breakdown and cost calculation at the end of evaluation
+    if (tokenUsage.total > 0 || (tokenUsage.prompt || 0) + (tokenUsage.completion || 0) > 0) {
+      logger.info('');
+      logger.info(chalk.bold('Token Usage Details:'));
+      logger.info(`  Total: ${chalk.white.bold(tokenUsage.total.toLocaleString())}`);
+      logger.info(`  Prompt: ${chalk.white(tokenUsage.prompt.toLocaleString())}`);
+      logger.info(`  Completion: ${chalk.white(tokenUsage.completion.toLocaleString())}`);
+      if (tokenUsage.cached && tokenUsage.cached > 0) {
+        logger.info(`  Cached: ${chalk.green(tokenUsage.cached.toLocaleString())}`);
+      }
+      if (tokenUsage.completionDetails?.reasoning && tokenUsage.completionDetails.reasoning > 0) {
+        logger.info(`  Reasoning: ${chalk.white(tokenUsage.completionDetails.reasoning.toLocaleString())}`);
+      }
+
+      // Calculate cost for GPT-4.1 pricing (input tokens minus cached tokens at $2.00/1M, cached tokens at $0.50/1M, completion tokens at $8.00/1M)
+      const inputTokens = (tokenUsage.prompt || 0) - (tokenUsage.cached || 0);
+      const cachedTokens = tokenUsage.cached || 0;
+      const completionTokens = tokenUsage.completion || 0;
+
+      const inputCost = (inputTokens * 2.00) / 1_000_000; // $2.00 per 1M tokens
+      const cachedCost = (cachedTokens * 0.50) / 1_000_000; // $0.50 per 1M tokens
+      const completionCost = (completionTokens * 8.00) / 1_000_000; // $8.00 per 1M tokens
+      const totalCost = inputCost + cachedCost + completionCost;
+
+      logger.info('');
+      logger.info(chalk.bold('Estimated Cost (GPT-4.1 pricing):'));
+      logger.info(`  Input tokens (${inputTokens.toLocaleString()}): ${chalk.white(inputCost.toFixed(6))} USD`);
+      logger.info(`  Cached tokens (${cachedTokens.toLocaleString()}): ${chalk.green(cachedCost.toFixed(6))} USD`);
+      logger.info(`  Completion tokens (${completionTokens.toLocaleString()}): ${chalk.white(completionCost.toFixed(6))} USD`);
+      logger.info(`  ${chalk.blue.bold('Total cost:')} ${chalk.white.bold(totalCost.toFixed(6))} USD`);
+    }
+    if (tokenUsage.total > 0 || (tokenUsage.prompt || 0) + (tokenUsage.completion || 0) > 0) {
+      const combinedTotal = (tokenUsage.prompt || 0) + (tokenUsage.completion || 0);
+      const evalTokens = {
+        prompt: tokenUsage.prompt || 0,
+        completion: tokenUsage.completion || 0,
+        total: tokenUsage.total || combinedTotal,
+        cached: tokenUsage.cached || 0,
+        completionDetails: tokenUsage.completionDetails || {
+          reasoning: 0,
+          acceptedPrediction: 0,
+          rejectedPrediction: 0,
+        },
+      };
+
+      logger.info('');
+      logger.info(chalk.bold('Token Usage Details:'));
+      logger.info(`  Total: ${chalk.white.bold(evalTokens.total.toLocaleString())}`);
+      logger.info(`  Prompt: ${chalk.white(evalTokens.prompt.toLocaleString())}`);
+      logger.info(`  Completion: ${chalk.white(evalTokens.completion.toLocaleString())}`);
+      if (evalTokens.cached > 0) {
+        logger.info(`  Cached: ${chalk.green(evalTokens.cached.toLocaleString())}`);
+      }
+      if (evalTokens.completionDetails?.reasoning && evalTokens.completionDetails.reasoning > 0) {
+        logger.info(`  Reasoning: ${chalk.white(evalTokens.completionDetails.reasoning.toLocaleString())}`);
+      }
     }
     printBorder();
 
